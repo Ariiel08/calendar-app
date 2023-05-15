@@ -2,19 +2,22 @@ import { Calendar } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { getMessagesEN, localizer } from '../../helpers';
 import { Navbar, CalendarEvent, CalendarModal, AddNewBtn, DeleteBtn } from '../';
-import { useState } from 'react';
-import { useCalendarStore, useUIStore } from '../../hooks';
+import { useEffect, useState } from 'react';
+import { useAuthStore, useCalendarStore, useUIStore } from '../../hooks';
 
 export const CalendarPage = () => {
 
-    const { events, setActiveEvent } = useCalendarStore();
+    const { user } = useAuthStore();
+    const { events, setActiveEvent, startLoadingEvents } = useCalendarStore();
     const { openDateModal } = useUIStore();
     const [defaultView] = useState(localStorage.getItem('defaultView') || 'month');
 
     const eventStyleGetter = ( event, start, end, isSelected ) => {
         
+        const isMyEvent = ( user.uid === event.user._id ) || ( user.uid === event.user.uid );
+
         const style = {
-            backgroundColor: '#347CF7',
+            backgroundColor: isMyEvent ? '#2ed866' : '#347CF7',
             borderRadius: '0px',
             opacity: 0.8,
             color: 'white'
@@ -36,6 +39,11 @@ export const CalendarPage = () => {
     const onViewChanged = (e) => {
         localStorage.setItem('defaultView', e);
     }
+
+    useEffect(() => {
+        startLoadingEvents();
+    }, []);
+    
 
     return (
         <>
